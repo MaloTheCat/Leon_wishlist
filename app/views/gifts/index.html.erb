@@ -1,2 +1,45 @@
-<h1>Gifts#index</h1>
-<p>Find me in app/views/gifts/index.html.erb</p>
+<h1>My Gifts</h1>
+
+<div style="margin-bottom: 1rem;">
+  <%= link_to "➕ Add New Gift", new_gift_path, style: "background: #007bff; color: white; padding: 0.5rem 1rem; text-decoration: none; border-radius: 4px; display: inline-block; margin-right: 0.5rem;" %>
+  <%= link_to "📤 Import Gifts", import_gifts_path, style: "background: #28a745; color: white; padding: 0.5rem 1rem; text-decoration: none; border-radius: 4px; display: inline-block;" %>
+</div>
+
+<% if @gifts.any? %>
+  <table style="width: 100%; border-collapse: collapse; margin-top: 2rem;">
+    <thead>
+      <tr style="background: #f8f9fa;">
+        <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #dee2e6;">Name</th>
+        <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #dee2e6;">Price</th>
+        <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #dee2e6;">Link</th>
+        <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #dee2e6;">Status</th>
+        <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #dee2e6;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @gifts.each do |gift| %>
+        <tr>
+          <td style="padding: 0.75rem; border-bottom: 1px solid #dee2e6;"><%= gift.name %></td>
+          <td style="padding: 0.75rem; border-bottom: 1px solid #dee2e6;"><%= number_to_currency(gift.price) if gift.price %></td>
+          <td style="padding: 0.75rem; border-bottom: 1px solid #dee2e6;">
+            <% if gift.link.present? %>
+              <%= link_to "🔗 Link", gift.link, target: "_blank", style: "color: #007bff;" %>
+            <% end %>
+          </td>
+          <td style="padding: 0.75rem; border-bottom: 1px solid #dee2e6;">
+            <%= gift.reserved? ? "✅ Reserved" : "⬜ Available" %>
+          </td>
+          <td style="padding: 0.75rem; border-bottom: 1px solid #dee2e6;">
+            <%= link_to "✏️ Edit", edit_gift_path(gift), style: "color: #007bff; margin-right: 0.5rem;" %>
+            <%= button_to "🗑️ Delete", gift_path(gift), method: :delete, data: { confirm: "Are you sure?" }, style: "background: #dc3545; color: white; border: none; padding: 0.25rem 0.5rem; cursor: pointer; border-radius: 4px; display: inline;" %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <div style="text-align: center; padding: 3rem; background: #f8f9fa; border-radius: 8px; margin-top: 2rem;">
+    <h2>No gifts yet</h2>
+    <p>Add your first gift to start building your wishlist!</p>
+  </div>
+<% end %>

@@ -1,2 +1,39 @@
-<h1>Gifts#edit</h1>
-<p>Find me in app/views/gifts/edit.html.erb</p>
+<h1>Edit Gift</h1>
+
+<%= form_with model: @gift, local: true do |form| %>
+  <% if @gift.errors.any? %>
+    <div style="background: #f8d7da; color: #721c24; padding: 1rem; margin-bottom: 1rem; border: 1px solid #f5c6cb; border-radius: 4px;">
+      <h3><%= pluralize(@gift.errors.count, "error") %> prohibited this gift from being saved:</h3>
+      <ul>
+        <% @gift.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div style="margin-bottom: 1rem;">
+    <%= form.label :name, style: "display: block; margin-bottom: 0.5rem; font-weight: bold;" %>
+    <%= form.text_field :name, required: true, style: "width: 100%; padding: 0.5rem; border: 1px solid #ced4da; border-radius: 4px;" %>
+  </div>
+
+  <div style="margin-bottom: 1rem;">
+    <%= form.label :price, style: "display: block; margin-bottom: 0.5rem; font-weight: bold;" %>
+    <%= form.number_field :price, step: 0.01, min: 0, style: "width: 100%; padding: 0.5rem; border: 1px solid #ced4da; border-radius: 4px;" %>
+  </div>
+
+  <div style="margin-bottom: 1rem;">
+    <%= form.label :link, "Link (URL)", style: "display: block; margin-bottom: 0.5rem; font-weight: bold;" %>
+    <%= form.url_field :link, placeholder: "https://example.com/product", style: "width: 100%; padding: 0.5rem; border: 1px solid #ced4da; border-radius: 4px;" %>
+  </div>
+
+  <div style="margin-bottom: 1rem;">
+    <%= form.label :image, style: "display: block; margin-bottom: 0.5rem; font-weight: bold;" %>
+    <%= form.file_field :image, accept: "image/*", style: "width: 100%; padding: 0.5rem; border: 1px solid #ced4da; border-radius: 4px;" %>
+  </div>
+
+  <div>
+    <%= form.submit "Update Gift", style: "background: #007bff; color: white; padding: 0.75rem 1.5rem; border: none; cursor: pointer; border-radius: 4px; font-size: 1rem;" %>
+    <%= link_to "Cancel", gifts_path, style: "margin-left: 1rem; color: #6c757d;" %>
+  </div>
+<% end %>

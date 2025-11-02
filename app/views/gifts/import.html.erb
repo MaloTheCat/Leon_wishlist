@@ -1,2 +1,28 @@
-<h1>Gifts#import</h1>
-<p>Find me in app/views/gifts/import.html.erb</p>
+<h1>Import Gifts from File</h1>
+
+<div style="background: #d1ecf1; color: #0c5460; padding: 1rem; margin-bottom: 2rem; border: 1px solid #bee5eb; border-radius: 4px;">
+  <h3>Instructions:</h3>
+  <p>Upload a CSV or Excel file with the following columns:</p>
+  <ul>
+    <li><strong>name</strong> or <strong>Name</strong> - The gift name (required)</li>
+    <li><strong>price</strong> or <strong>Price</strong> - The gift price (optional)</li>
+    <li><strong>link</strong> or <strong>Link</strong> - A URL to the product (optional)</li>
+  </ul>
+  <p><strong>Example CSV:</strong></p>
+  <pre style="background: white; padding: 0.5rem; border-radius: 4px;">name,price,link
+"New Book",25.99,https://example.com/book
+"Coffee Mug",15.00,https://example.com/mug</pre>
+</div>
+
+<%= form_with url: import_gifts_path, method: :post, local: true, multipart: true do |form| %>
+  <div style="margin-bottom: 1rem;">
+    <%= form.label :file, "Select File", style: "display: block; margin-bottom: 0.5rem; font-weight: bold;" %>
+    <%= form.file_field :file, accept: ".csv,.xls,.xlsx", required: true, style: "width: 100%; padding: 0.5rem; border: 1px solid #ced4da; border-radius: 4px;" %>
+    <small style="color: #6c757d;">Supported formats: CSV, XLS, XLSX</small>
+  </div>
+
+  <div>
+    <%= form.submit "Import Gifts", style: "background: #28a745; color: white; padding: 0.75rem 1.5rem; border: none; cursor: pointer; border-radius: 4px; font-size: 1rem;" %>
+    <%= link_to "Cancel", gifts_path, style: "margin-left: 1rem; color: #6c757d;" %>
+  </div>
+<% end %>

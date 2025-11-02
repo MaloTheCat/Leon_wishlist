@@ -1,2 +1,74 @@
-<h1>Groups#show</h1>
-<p>Find me in app/views/groups/show.html.erb</p>
+<h1><%= @group.name %></h1>
+
+<div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 2rem;">
+  <h3 style="margin-top: 0;">Group Members</h3>
+  <ul style="list-style: none; padding: 0;">
+    <% @members.each do |member| %>
+      <li style="padding: 0.5rem 0; border-bottom: 1px solid #dee2e6;">
+        <%= member.email %>
+        <% if member == current_user %>
+          <span style="color: #28a745; font-weight: bold;">(You)</span>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+</div>
+
+<h2>Group Members' Wishlists</h2>
+
+<% if @member_gifts.any? %>
+  <% @members.reject { |m| m == current_user }.each do |member| %>
+    <% member_gifts = member.gifts %>
+    <% if member_gifts.any? %>
+      <h3><%= member.email %>'s Wishlist</h3>
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 2rem;">
+        <thead>
+          <tr style="background: #f8f9fa;">
+            <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #dee2e6;">Gift Name</th>
+            <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #dee2e6;">Price</th>
+            <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #dee2e6;">Link</th>
+            <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #dee2e6;">Status</th>
+            <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #dee2e6;">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% member_gifts.each do |gift| %>
+            <tr>
+              <td style="padding: 0.75rem; border-bottom: 1px solid #dee2e6;"><%= gift.name %></td>
+              <td style="padding: 0.75rem; border-bottom: 1px solid #dee2e6;"><%= number_to_currency(gift.price) if gift.price %></td>
+              <td style="padding: 0.75rem; border-bottom: 1px solid #dee2e6;">
+                <% if gift.link.present? %>
+                  <%= link_to "🔗 View", gift.link, target: "_blank", style: "color: #007bff;" %>
+                <% end %>
+              </td>
+              <td style="padding: 0.75rem; border-bottom: 1px solid #dee2e6;">
+                <% if gift.reserved_by == current_user %>
+                  <span style="color: #28a745; font-weight: bold;">✅ Reserved by you</span>
+                <% elsif gift.reserved? %>
+                  <span style="color: #6c757d;">✅ Reserved</span>
+                <% else %>
+                  <span style="color: #007bff;">⬜ Available</span>
+                <% end %>
+              </td>
+              <td style="padding: 0.75rem; border-bottom: 1px solid #dee2e6;">
+                <% if gift.reserved_by == current_user %>
+                  <%= button_to "Cancel Reservation", unreserve_gift_path(gift), method: :delete, style: "background: #dc3545; color: white; border: none; padding: 0.25rem 0.75rem; cursor: pointer; border-radius: 4px;" %>
+                <% elsif !gift.reserved? %>
+                  <%= button_to "Reserve", reserve_gift_path(gift), method: :post, style: "background: #28a745; color: white; border: none; padding: 0.25rem 0.75rem; cursor: pointer; border-radius: 4px;" %>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% end %>
+  <% end %>
+<% else %>
+  <div style="text-align: center; padding: 2rem; background: #f8f9fa; border-radius: 8px;">
+    <p>No other members have added gifts to their wishlists yet.</p>
+  </div>
+<% end %>
+
+<div style="margin-top: 2rem;">
+  <%= link_to "← Back to Groups", groups_path, style: "color: #007bff;" %>
+</div>

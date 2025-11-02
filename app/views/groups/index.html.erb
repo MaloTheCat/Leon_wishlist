@@ -1,2 +1,45 @@
-<h1>Groups#index</h1>
-<p>Find me in app/views/groups/index.html.erb</p>
+<h1>My Groups</h1>
+
+<div style="margin-bottom: 1rem;">
+  <%= link_to "➕ Create New Group", new_group_path, style: "background: #28a745; color: white; padding: 0.5rem 1rem; text-decoration: none; border-radius: 4px; display: inline-block;" %>
+</div>
+
+<% if @groups.any? %>
+  <h2>Groups I'm In</h2>
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; margin-top: 1rem;">
+    <% @groups.each do |group| %>
+      <div style="border: 1px solid #dee2e6; border-radius: 8px; padding: 1.5rem; background: #f8f9fa;">
+        <h3 style="margin-top: 0;"><%= link_to group.name, group_path(group), style: "color: #007bff; text-decoration: none;" %></h3>
+        <p style="color: #6c757d; margin: 0.5rem 0;">
+          👥 <%= pluralize(group.users.count, "member") %>
+        </p>
+        <div style="margin-top: 1rem;">
+          <%= link_to "View Group", group_path(group), style: "background: #007bff; color: white; padding: 0.5rem 1rem; text-decoration: none; border-radius: 4px; display: inline-block; margin-right: 0.5rem;" %>
+          <%= button_to "Leave", leave_group_path(group), method: :delete, data: { confirm: "Are you sure you want to leave this group?" }, style: "background: #dc3545; color: white; border: none; padding: 0.5rem 1rem; cursor: pointer; border-radius: 4px; display: inline;" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% else %>
+  <div style="text-align: center; padding: 2rem; background: #f8f9fa; border-radius: 8px; margin-bottom: 2rem;">
+    <h2>You're not in any groups yet</h2>
+    <p>Create a group or join an existing one to start sharing wishlists!</p>
+  </div>
+<% end %>
+
+<% if @available_groups.any? %>
+  <h2 style="margin-top: 3rem;">Available Groups to Join</h2>
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; margin-top: 1rem;">
+    <% @available_groups.each do |group| %>
+      <div style="border: 1px solid #dee2e6; border-radius: 8px; padding: 1.5rem; background: white;">
+        <h3 style="margin-top: 0;"><%= group.name %></h3>
+        <p style="color: #6c757d; margin: 0.5rem 0;">
+          👥 <%= pluralize(group.users.count, "member") %>
+        </p>
+        <div style="margin-top: 1rem;">
+          <%= button_to "Join Group", join_group_path(group), method: :post, style: "background: #28a745; color: white; border: none; padding: 0.5rem 1rem; cursor: pointer; border-radius: 4px; width: 100%;" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% end %>

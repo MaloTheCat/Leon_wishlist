@@ -1,2 +1,24 @@
-<h1>Groups#new</h1>
-<p>Find me in app/views/groups/new.html.erb</p>
+<h1>Create New Group</h1>
+
+<%= form_with model: @group, local: true do |form| %>
+  <% if @group.errors.any? %>
+    <div style="background: #f8d7da; color: #721c24; padding: 1rem; margin-bottom: 1rem; border: 1px solid #f5c6cb; border-radius: 4px;">
+      <h3><%= pluralize(@group.errors.count, "error") %> prohibited this group from being saved:</h3>
+      <ul>
+        <% @group.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div style="margin-bottom: 1rem;">
+    <%= form.label :name, "Group Name", style: "display: block; margin-bottom: 0.5rem; font-weight: bold;" %>
+    <%= form.text_field :name, required: true, placeholder: "e.g., Smith Family Christmas 2023", style: "width: 100%; padding: 0.5rem; border: 1px solid #ced4da; border-radius: 4px;" %>
+  </div>
+
+  <div>
+    <%= form.submit "Create Group", style: "background: #28a745; color: white; padding: 0.75rem 1.5rem; border: none; cursor: pointer; border-radius: 4px; font-size: 1rem;" %>
+    <%= link_to "Cancel", groups_path, style: "margin-left: 1rem; color: #6c757d;" %>
+  </div>
+<% end %>
