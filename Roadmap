@@ -1,0 +1,276 @@
+[VIBECODING TEST] A Christmas list to simplify who gave what. In your account, you can manage your list and edit the lists of other people in the same group. With a simple and quick view, you'll also have the option to import your lists from a file.
+
+PROMPT:
+Je suis un déveloper fullstack spécialisé Ruby On Rails qui connait pas mal de chose sur l'architecture (docker, kubernetes, etc.) Je souhaite que tu vibe code un projet dont voici l'idée :
+En Ruby on rails avec postgresql je veux créer une whishlist pour que les utilisateurs puisse ajouter sur le compte leur liste de noël. L'idée serait d'avoir un mixe entre Dropbox pour pouvoir déposer leur liste au format .csv, .txt, .rtf ou .docx et un mix avec un compte utilisateur pour que chacun puisse déposer dans son espace sa liste/ Le tout serait transformé en forme de tableau avec l'intitulé du cadeau, son prix potentiel, le lien, une image, la personne qui aura réservé ce cadeau. Pour voir les liste des autres personnes, il faut au préalable déposer sa liste dans son espace. Chaque personne sera dans un "groupe"/"famille" afin que d'autres membres qui s'inscrivent ne voit pas les listes de personnes qu'ils ne connaissent pas. De plus, il faut que la personne qui ajoute sa liste, ne voit pas qui lui prend les cadeaux, cela doit rester visible par tout le monde sauf à l'intéressé. J'imagine ainsi la structure suivante : un modèle User, Whishlist, Group, Gift. Je souhaiterais utiliser Devise pour l'authentification, Github avec ses github action pour pouvoir déployer mon application qui sera sur un serveur personnalisé. J'utiliserai un reverse proxy https avec lets encrypt. Je pense à Nginx ou Traefik. J'ai l'habitude d'utiliser Docker avec Docker compose et les Dockerfile. Avant de commencer à coder, écrit moi toutes les étapes que je pourrais intégrer dans Notion.
+
+Commencer simple : MVP d'abord avec création manuelle de cadeaux, ajouter l'import de fichiers ensuite
+Traefik recommandé : Plus simple avec Docker, gestion auto des certificats
+GitHub Actions : Template Docker pour Rails dispo, adapter à ton cas
+Branches : main (prod), staging (pré-prod), develop (dev) + feature branches
+Secrets : Utiliser GitHub Secrets pour les credentials de déploiement
+Rollback : Garder les 3 dernières images Docker pour rollback rapide
+
+MVP:
+- Avoir et gérer un compte utilisateur (Devise)
+- Un User appartient à une famille (groupe), à un nom, un prénom, peut avoir plusieurs listes de cadeaux, une adresse email, un password, un has_filled_list en boolean
+- La Wishlist appartient à un utilisateur, à une année, appartient à un groupe, à une description, un status public en boolean, à un titre
+- La Family (ou group) à plusieurs Wishlist, et plusieurs User.
+- Un user doit voir toute sa liste sous forme de tableau
+- Le tableau comporte le nom du cadeau, le prix, le lien, la personne qui l'aura réservé (doit être visible par tout le monde sauf la personne qui souhaite le cadeau)
+- Un user doit ajouter, éditer ou supprimer une cadeau dans sa liste
+- Une liste doit avoir un bouton de partage pour l'envoyer par mail
+
+ROADMAP:
+Phase 1 : Initialisation & Configuration (Jour 1-2)
+1.1 Setup Initial du Projet
+ Créer le projet Rails 7.x avec PostgreSQL
+ Configurer les gems essentielles (Devise, Pundit, ActiveStorage, etc.)
+ Setup du .gitignore et premier commit
+ Créer le repository GitHub et configurer les branches (main, develop, staging)
+
+1.2 Configuration Docker
+ Créer le Dockerfile (multi-stage build pour optimisation)
+ Créer le docker-compose.yml (rails, postgresql, redis pour ActionCable)
+ Configurer les volumes pour le développement
+ Tester le build et le lancement local
+
+1.3 Configuration Base de Données
+ Configurer database.yml pour les différents environnements
+ Préparer les credentials Rails pour les secrets
+ Tester la connexion PostgreSQL
+
+
+Phase 2 : Authentification & Modèles de Base (Jour 3-5)
+2.1 Installation & Configuration Devise
+ Installer Devise et générer le modèle User
+ Personnaliser les vues Devise (registration, login, etc.)
+ Ajouter les champs personnalisés au User (first_name, last_name, etc.)
+ Configurer les emails de confirmation (optionnel)
+
+2.2 Création des Modèles
+Modèle Family
+Attributs : name, invite_code (unique), created_by (user_id)
+Associations : has_many :memberships, has_many :users, through: :memberships
+
+Modèle Membership (table de jointure)
+Attributs : user_id, family_id, role (admin/member)
+Validations : unicité de la paire user_id/family_id
+
+
+Modèle Wishlist
+Attributs : title, user_id, family_id, status (draft/published)
+Associations : belongs_to :user, belongs_to :family, has_many :gifts
+
+Modèle Gift
+Attributs : name, description, price, url, reserved_by (user_id), wishlist_id
+Association : belongs_to :wishlist, belongs_to :reserver (User, optional)
+ActiveStorage : has_one_attached :image
+
+2.3 Migrations & Seeds
+ Créer toutes les migrations
+ Écrire un fichier seeds.rb pour des données de test
+ Tester les associations et validations dans la console Rails
+
+Phase 3 : Autorisations & Logique Métier (Jour 6-7)
+3.1 Policies avec Pundit
+ Installer Pundit
+ Créer GroupPolicy (gérer l'accès aux groupes)
+ Créer WishlistPolicy (voir les wishlists uniquement si on a publié la sienne)
+ Créer GiftPolicy (ne pas voir qui a réservé ses propres cadeaux)
+ Tester les policies dans la console
+
+3.2 Logique de Visibilité
+ Implémenter la règle : "Pour voir les listes des autres, il faut avoir publié sa liste"
+ Cacher l'identité du réservant pour le propriétaire de la wishlist
+ Afficher les réservations aux autres membres du groupe
+
+3.3 Système d'Invitation aux Groupes
+ Générer un invite_code unique à la création d'un groupe
+ Page de jointure via invite_code
+ Validation que l'utilisateur n'est pas déjà membre
+
+
+Phase 4 : Import de Fichiers (Jour 8-10)
+4.1 Configuration ActiveStorage
+ Configurer ActiveStorage (local en dev, S3/MinIO en prod optionnel)
+ Ajouter les gems nécessaires (roo, docx, rtf parser)
+
+4.2 Parser de Fichiers
+ Service ParseCsvService : parser .csv
+ Service ParseTxtService : parser .txt (format libre ou structuré)
+ Service ParseRtfService : parser .rtf
+ Service ParseDocxService : parser .docx
+ Définir un format standard attendu dans les fichiers
+
+4.3 Import Controller & Views
+ Créer le formulaire d'upload de fichier
+ Controller action pour traiter l'upload
+ Créer les gifts depuis le fichier parsé
+ Gestion des erreurs et feedback utilisateur
+ Preview avant validation de l'import
+
+4.4 Enrichissement Automatique (Optionnel)
+ Si URL fournie : scraper l'image et le titre (gem metainspector)
+ Validation des URLs
+ Fallback si pas d'image trouvée
+
+Phase 5 : Interface Utilisateur (Jour 11-14)
+5.1 Layouts & Navigation
+ Layout principal avec navigation (Tailwind CSS ou Bootstrap)
+ Menu conditionnel selon l'authentification
+ Navbar avec accès : Mon profil, Mes listes, Mon groupe, Listes du groupe
+
+5.2 Pages Principales
+ Dashboard : Vue d'ensemble (mes listes, statut, liens rapides)
+ Mes Wishlists : CRUD de mes wishlists
+ Détail d'une Wishlist : Tableau des cadeaux avec actions
+ Wishlists du Groupe/famille : Liste des wishlists des autres membres
+ Détail Wishlist d'un Autre : Voir et réserver des cadeaux
+
+5.3 Gestion des Groupes
+ Page de création de groupe
+ Page d'invitation (affichage du code, lien partageable)
+ Page pour rejoindre un groupe via code
+ Liste des membres du groupe
+
+5.4 Gestion des Cadeaux
+ Formulaire d'ajout manuel de cadeau
+ Affichage en tableau responsive (intitulé, prix, lien, image, statut)
+ Bouton "Réserver" (avec confirmation)
+ Badge "Réservé" (visible ou non selon le contexte)
+ Modal ou page pour éditer un cadeau
+
+5.5 UX/UI Polish
+ Ajouter des messages flash stylisés
+ Loading states pour les actions async
+ Responsive design (mobile-first)
+ Icônes (FontAwesome ou Heroicons)
+
+
+Phase 6 : Fonctionnalités Avancées (Jour 15-17)
+6.1 Notifications (Optionnel)
+ Notification quand quelqu'un rejoint le groupe
+ Notification quand une nouvelle liste est publiée
+ Système de notifications avec ActionCable ou emails
+
+6.2 Recherche & Filtres
+ Recherche de cadeaux dans une wishlist
+ Filtres par prix, statut (réservé/disponible)
+ Tri des colonnes du tableau
+
+6.3 Export
+ Exporter sa wishlist en PDF
+ Exporter en CSV
+
+6.4 Statistiques (Optionnel)
+ Dashboard avec stats : nombre de cadeaux, budget total, % réservé
+ Graphiques avec Chart.js ou similaire
+
+
+Phase 7 : Déploiement & CI/CD (Jour 18-20)
+7.1 Configuration du Serveur
+ Provisionner le serveur (VPS, SSH, firewall)
+ Installer Docker & Docker Compose sur le serveur
+ Configurer les DNS pour pointer vers le serveur
+
+7.2 Reverse Proxy & HTTPS
+ Traefik (recommandé pour Docker)
+Configurer Traefik dans docker-compose
+Labels Docker pour routing automatique
+Activation ACME pour Let's Encrypt automatique
+Dashboard Traefik (optionnel)
+
+7.3 Docker Production
+ Créer docker-compose.prod.yml
+ Variables d'environnement sécurisées (.env, secrets)
+ Configuration PostgreSQL production (volumes persistants)
+ Setup Redis si ActionCable utilisé
+ Healthchecks dans docker-compose
+
+7.4 GitHub Actions
+ Workflow CI : Tests automatisés
+Setup de la base de test
+Lancement des tests (RSpec ou Minitest)
+Linting (Rubocop)
+
+ Workflow CD : Déploiement automatique
+Trigger sur push vers main ou tag
+Build de l'image Docker
+Push vers GitHub Container Registry ou DockerHub
+SSH vers le serveur
+Pull de la nouvelle image
+Docker-compose up avec zero-downtime
+Run migrations
+Rollback en cas d'échec
+
+7.5 Monitoring & Logs
+ Configurer les logs Rails (logrotate)
+ Monitoring avec Docker logs
+ Alertes (optionnel : UptimeRobot, Sentry)
+
+Phase 8 : Tests & Sécurité (Jour 21-23)
+8.1 Tests
+ Tests des modèles (validations, associations)
+ Tests des policies Pundit
+ Tests des services (parsers de fichiers)
+ Tests d'intégration (feature tests avec Capybara)
+ Tests des controllers principaux
+
+8.2 Sécurité
+ Audit des dépendances (bundler-audit, brakeman)
+ Protection CSRF activée
+ Strong parameters vérifiés partout
+ Rate limiting (rack-attack) sur login et actions sensibles
+ Validation des uploads (type MIME, taille)
+ Sanitization des données parsées
+
+8.3 Performance
+ Eager loading pour éviter les N+1 queries (bullet gem)
+ Indexes sur les foreign keys et champs de recherche
+ Cache pour les pages fréquemment consultées (optionnel)
+ Compression des assets
+
+
+Phase 9 : Documentation & Finitions (Jour 24-25)
+9.1 Documentation
+ README.md complet (description, setup, deploy)
+ Documenter le format attendu des fichiers d'import
+ Guide utilisateur (comment créer un groupe, inviter, etc.)
+ Documentation technique (architecture, modèles, policies)
+
+9.2 Améliorations UX
+ Onboarding pour les nouveaux utilisateurs
+ Page d'aide/FAQ
+ Messages d'erreur explicites
+ Confirmation sur les actions destructives
+
+9.3 Backup & Maintenance
+ Script de backup automatique PostgreSQL
+ Plan de restoration
+ Documentation de maintenance
+
+Phase 10 : Lancement & Suivi (Jour 26+)
+10.1 Beta Testing
+ Inviter quelques utilisateurs tests
+ Collecter les retours
+ Corriger les bugs critiques
+
+10.2 Lancement
+ Communication auprès des premiers utilisateurs
+ Monitoring actif les premiers jours
+ Prévoir une hotline/support
+
+10.3 Post-Lancement
+ Analyser les logs et l'usage
+ Prioriser les nouvelles features
+ Maintenance régulière et mises à jour de sécurité
+
+
+Gems essentielles :
+devise - Authentification
+pundit - Autorisation
+pg - PostgreSQL
+roo - Parser Excel/CSV
+docx - Parser DOCX
+rtf - Parser RTF (ou gem alternative)

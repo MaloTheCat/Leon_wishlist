@@ -1,0 +1,65 @@
+<div class="container mt-4">
+  <h1>Ma Famille - <%= @family.name %></h1>
+  
+  <div class="card mb-4">
+    <div class="card-header">
+      <h3>Code d'invitation</h3>
+    </div>
+    <div class="card-body">
+      <p>Partagez ce code avec vos proches pour qu'ils rejoignent votre famille :</p>
+      <div class="alert alert-info">
+        <h2 class="text-center mb-0"><strong><%= @family.invite_code %></strong></h2>
+      </div>
+      <p class="text-muted">Les membres de votre famille pourront l'utiliser lors de leur inscription.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h3>Membres de la famille (<%= @members.count %>)</h3>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Email</th>
+              <th>Listes publiées</th>
+              <th>A rempli sa liste</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @members.each do |member| %>
+              <tr>
+                <td>
+                  <%= member.full_name %>
+                  <% if member == current_user %>
+                    <span class="badge bg-primary">Vous</span>
+                  <% end %>
+                </td>
+                <td><%= member.email %></td>
+                <td>
+                  <span class="badge bg-info">
+                    <%= member.wishlists.where(is_public: true).count %>
+                  </span>
+                </td>
+                <td>
+                  <% if member.has_filled_list %>
+                    <span class="badge bg-success">✓</span>
+                  <% else %>
+                    <span class="badge bg-secondary">-</span>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-3">
+    <%= link_to "← Retour aux listes", wishlists_path, class: "btn btn-secondary" %>
+  </div>
+</div>

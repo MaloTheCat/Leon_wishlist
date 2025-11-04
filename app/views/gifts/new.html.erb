@@ -1,0 +1,39 @@
+<div class="container mt-4">
+  <h1>Ajouter un Cadeau</h1>
+  <p class="text-muted">Liste : <%= @wishlist.title %></p>
+
+  <%= form_with model: [@wishlist, @gift], local: true do |f| %>
+    <% if @gift.errors.any? %>
+      <div class="alert alert-danger">
+        <h4><%= pluralize(@gift.errors.count, "erreur") %> :</h4>
+        <ul>
+          <% @gift.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="mb-3">
+      <%= f.label :name, "Nom du cadeau", class: "form-label" %>
+      <%= f.text_field :name, class: "form-control", placeholder: "Ex: Livre de cuisine", required: true, autofocus: true %>
+    </div>
+
+    <div class="mb-3">
+      <%= f.label :price, "Prix estimé (€)", class: "form-label" %>
+      <%= f.number_field :price, class: "form-control", step: 0.01, min: 0, placeholder: "Ex: 29.99" %>
+      <small class="text-muted">Optionnel</small>
+    </div>
+
+    <div class="mb-3">
+      <%= f.label :link, "Lien vers le produit", class: "form-label" %>
+      <%= f.url_field :link, class: "form-control", placeholder: "https://www.exemple.com/produit" %>
+      <small class="text-muted">Optionnel - URL complète du produit</small>
+    </div>
+
+    <div class="d-flex gap-2">
+      <%= f.submit "Ajouter le cadeau", class: "btn btn-success" %>
+      <%= link_to "Annuler", @wishlist, class: "btn btn-secondary" %>
+    </div>
+  <% end %>
+</div>

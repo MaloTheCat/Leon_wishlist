@@ -1,0 +1,153 @@
+<div class="container mt-4">
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <h1><%= @wishlist.title %></h1>
+      <p class="text-muted">Liste de <%= @wishlist.user.full_name %> - Année <%= @wishlist.year %></p>
+      <% if @wishlist.description.present? %>
+        <p><%= @wishlist.description %></p>
+      <% end %>
+    </div>
+    <div class="col-md-4 text-end">
+      <% if @wishlist.user == current_user %>
+        <%= link_to "Ajouter un cadeau", new_wishlist_gift_path(@wishlist), class: "btn btn-success" %>
+        <%= link_to "Éditer la liste", edit_wishlist_path(@wishlist), class: "btn btn-warning" %>
+      <% end %>
+    </div>
+  </div>
+
+  <% if @wishlist.user == current_user %>
+    <!-- Vue pour le propriétaire de la liste -->
+    <div class="card mb-4">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="mb-0">Mes cadeaux</h3>
+        <div>
+          <%= form_with url: share_wishlist_path(@wishlist), method: :post, class: "d-inline-flex gap-2" do |f| %>
+            <%= f.email_field :email, placeholder: "email@example.com", class: "form-control form-control-sm", required: true %>
+            <%= f.submit "Partager par email", class: "btn btn-sm btn-primary" %>
+          <% end %>
+        </div>
+      </div>
+      <div class="card-body">
+        <% if @gifts.any? %>
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Nom du cadeau</th>
+                  <th>Prix</th>
+                  <th>Lien</th>
+                  <th>Statut</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @gifts.each do |gift| %>
+                  <tr>
+                    <td><strong><%= gift.name %></strong></td>
+                    <td>
+                      <% if gift.price.present? %>
+                        <%= number_to_currency(gift.price, unit: "€", separator: ",", delimiter: " ") %>
+                      <% else %>
+                        <span class="text-muted">Non spécifié</span>
+                      <% end %>
+                    </td>
+                    <td>
+                      <% if gift.link.present? %>
+                        <%= link_to "Voir le lien", gift.link, target: "_blank", class: "btn btn-sm btn-outline-primary" %>
+                      <% else %>
+                        <span class="text-muted">Aucun lien</span>
+                      <% end %>
+                    </td>
+                    <td>
+                      <% if gift.reserved? %>
+                        <span class="badge bg-success">Réservé</span>
+                      <% else %>
+                        <span class="badge bg-secondary">Disponible</span>
+                      <% end %>
+                    </td>
+                    <td>
+                      <%= link_to "Éditer", edit_wishlist_gift_path(@wishlist, gift), class: "btn btn-sm btn-warning" %>
+                      <%= button_to "Supprimer", wishlist_gift_path(@wishlist, gift), method: :delete,
+                          data: { confirm: "Êtes-vous sûr ?" }, class: "btn btn-sm btn-danger" %>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        <% else %>
+          <p class="text-muted">Aucun cadeau dans cette liste. <%= link_to "Ajouter mon premier cadeau", new_wishlist_gift_path(@wishlist) %></p>
+        <% end %>
+      </div>
+    </div>
+  <% else %>
+    <!-- Vue pour les autres membres de la famille -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h3>Liste de cadeaux</h3>
+      </div>
+      <div class="card-body">
+        <% if @gifts.any? %>
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Nom du cadeau</th>
+                  <th>Prix</th>
+                  <th>Lien</th>
+                  <th>Réservé par</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @gifts.each do |gift| %>
+                  <tr>
+                    <td><strong><%= gift.name %></strong></td>
+                    <td>
+                      <% if gift.price.present? %>
+                        <%= number_to_currency(gift.price, unit: "€", separator: ",", delimiter: " ") %>
+                      <% else %>
+                        <span class="text-muted">Non spécifié</span>
+                      <% end %>
+                    </td>
+                    <td>
+                      <% if gift.link.present? %>
+                        <%= link_to "Voir le lien", gift.link, target: "_blank", class: "btn btn-sm btn-outline-primary" %>
+                      <% else %>
+                        <span class="text-muted">Aucun lien</span>
+                      <% end %>
+                    </td>
+                    <td>
+                      <% if gift.reserved? %>
+                        <span class="badge bg-success"><%= gift.reserved_by.full_name %></span>
+                      <% else %>
+                        <span class="badge bg-secondary">Disponible</span>
+                      <% end %>
+                    </td>
+                    <td>
+                      <% if gift.reserved_by == current_user %>
+                        <%= button_to "Annuler ma réservation", unreserve_wishlist_gift_path(@wishlist, gift),
+                            method: :delete, class: "btn btn-sm btn-warning" %>
+                      <% elsif !gift.reserved? %>
+                        <%= button_to "Réserver", reserve_wishlist_gift_path(@wishlist, gift),
+                            method: :post, class: "btn btn-sm btn-success" %>
+                      <% else %>
+                        <span class="text-muted">Déjà réservé</span>
+                      <% end %>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        <% else %>
+          <p class="text-muted">Cette liste ne contient pas encore de cadeaux.</p>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="mt-3">
+    <%= link_to "← Retour aux listes", wishlists_path, class: "btn btn-secondary" %>
+  </div>
+</div>

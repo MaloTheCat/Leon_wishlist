@@ -1,0 +1,109 @@
+<div class="container mt-4">
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <h1>Mes Listes de Cadeaux</h1>
+    </div>
+    <div class="col-md-4 text-end">
+      <%= link_to "Nouvelle Liste", new_wishlist_path, class: "btn btn-primary" %>
+    </div>
+  </div>
+
+  <% if @my_wishlists.any? %>
+    <div class="card mb-4">
+      <div class="card-header">
+        <h3>Mes listes</h3>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Titre</th>
+                <th>Année</th>
+                <th>Cadeaux</th>
+                <th>Statut</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @my_wishlists.each do |wishlist| %>
+                <tr>
+                  <td><%= link_to wishlist.title, wishlist_path(wishlist) %></td>
+                  <td><%= wishlist.year %></td>
+                  <td><span class="badge bg-info"><%= wishlist.gifts.count %> cadeaux</span></td>
+                  <td>
+                    <% if wishlist.is_public %>
+                      <span class="badge bg-success">Publique</span>
+                    <% else %>
+                      <span class="badge bg-secondary">Privée</span>
+                    <% end %>
+                  </td>
+                  <td>
+                    <%= link_to "Voir", wishlist_path(wishlist), class: "btn btn-sm btn-info" %>
+                    <%= link_to "Éditer", edit_wishlist_path(wishlist), class: "btn btn-sm btn-warning" %>
+                    <%= button_to "Supprimer", wishlist_path(wishlist), method: :delete, 
+                        data: { confirm: "Êtes-vous sûr ?" }, class: "btn btn-sm btn-danger" %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  <% else %>
+    <div class="alert alert-info">
+      Vous n'avez pas encore créé de liste. <%= link_to "Créer ma première liste", new_wishlist_path %>
+    </div>
+  <% end %>
+
+  <% if current_user.has_filled_list %>
+    <div class="card">
+      <div class="card-header">
+        <h3>Listes de ma famille</h3>
+      </div>
+      <div class="card-body">
+        <% if @family_wishlists.any? %>
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Membre</th>
+                  <th>Titre</th>
+                  <th>Année</th>
+                  <th>Cadeaux</th>
+                  <th>Réservés</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @family_wishlists.each do |wishlist| %>
+                  <tr>
+                    <td><%= wishlist.user.full_name %></td>
+                    <td><%= wishlist.title %></td>
+                    <td><%= wishlist.year %></td>
+                    <td><span class="badge bg-info"><%= wishlist.gifts.count %></span></td>
+                    <td>
+                      <span class="badge bg-success">
+                        <%= wishlist.gifts.where.not(reserved_by_id: nil).count %>
+                      </span>
+                    </td>
+                    <td>
+                      <%= link_to "Voir la liste", wishlist_path(wishlist), class: "btn btn-sm btn-primary" %>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        <% else %>
+          <p class="text-muted">Aucune liste publique disponible dans votre famille pour le moment.</p>
+        <% end %>
+      </div>
+    </div>
+  <% else %>
+    <div class="alert alert-warning">
+      <strong>Astuce :</strong> Créez et publiez votre liste pour voir les listes des autres membres de votre famille !
+    </div>
+  <% end %>
+</div>

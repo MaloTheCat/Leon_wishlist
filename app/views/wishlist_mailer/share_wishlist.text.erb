@@ -1,0 +1,25 @@
+🎁 Liste de cadeaux de <%= @user.full_name %>
+==============================================
+
+Bonjour,
+
+<%= @user.full_name %> a partagé sa liste de cadeaux avec vous !
+
+<%= @wishlist.title %> (<%= @wishlist.year %>)
+<% if @wishlist.description.present? %>
+<%= @wishlist.description %>
+<% end %>
+
+Cadeaux (<%= @gifts.count %>) :
+-------------------------------
+
+<% @gifts.each do |gift| %>
+- <%= gift.name %>
+  <% if gift.price.present? %>Prix : <%= number_to_currency(gift.price, unit: "€", separator: ",", delimiter: " ") %><% end %>
+  <% if gift.link.present? %>Lien : <%= gift.link %><% end %>
+  <% if gift.reserved? %>✓ Réservé par <%= gift.reserved_by.full_name %><% else %>✓ Disponible<% end %>
+
+<% end %>
+
+---
+Ce message a été envoyé depuis Leon Wishlist
