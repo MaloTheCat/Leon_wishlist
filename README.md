@@ -137,7 +137,22 @@ Un utilisateur ne peut voir les listes des autres membres de sa famille que s'il
 - [ ] Statistiques et tableaux de bord
 - [ ] Tests unitaires et d'intégration
 - [ ] Déploiement avec Docker
-- [ ] CI/CD avec GitHub Actions
+- [x] CI/CD avec GitHub Actions ✅
+
+## 🚀 CI/CD avec GitHub Actions
+
+Le projet est configuré avec GitHub Actions pour l'intégration et le déploiement continus.
+
+### Workflows disponibles :
+- **CI (Tests & Linting)** : Lancé automatiquement sur chaque push/PR
+- **Deploy Production** : Déploiement automatique sur la branche `main`
+- **Deploy Staging** : Déploiement sur la branche `staging`
+
+### Badges de status :
+```markdown
+![CI](https://github.com/MaloTheCat/Leon_whishlist/workflows/CI/badge.svg)
+![Deploy](https://github.com/MaloTheCat/Leon_whishlist/workflows/Deploy%20to%20Production/badge.svg)
+```
 
 ## 📝 Routes principales
 
