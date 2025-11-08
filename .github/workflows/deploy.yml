@@ -57,6 +57,19 @@ jobs:
     if: github.ref == 'refs/heads/main'
     
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Copy docker-compose.yml to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          source: "docker-compose.yml"
+          target: "/home/deploy/leon-wishlist/"
+
       - name: Deploy to production server
         uses: appleboy/ssh-action@v1.0.0
         with:
@@ -66,11 +79,22 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script: |
             cd /home/deploy/leon-wishlist
-            docker-compose pull web
-            docker-compose down
-            docker-compose up -d
-            docker-compose exec -T web rails db:migrate
-            docker-compose restart web
+
+            echo "📦 Pull de la nouvelle image..."
+            docker compose pull web
+
+            echo "🔄 Redémarrage de l'application..."
+            docker compose down
+            docker compose up -d
+
+            echo "⏳ Attente du démarrage..."
+            sleep 15
+
+            echo "🗄️ Migration de la base de données..."
+            docker compose exec -T web bundle exec rails db:migrate RAILS_ENV=production
+
+            echo "✅ Déploiement terminé!"
+            docker compose ps
 
       - name: Notify deployment success
         if: success()
@@ -88,5 +112,5 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script: |
             cd /home/deploy/leon-wishlist
-            docker-compose down
-            docker-compose up -d
+            docker compose down
+            docker compose up -d
