@@ -67,7 +67,7 @@ jobs:
           script: |
             cd /home/deploy/leon-wishlist
             docker-compose pull web
-            docker compose down
+            docker-compose down
             docker-compose up -d
             docker-compose exec -T web rails db:migrate
             docker-compose restart web
