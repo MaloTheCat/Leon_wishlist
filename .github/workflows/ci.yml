@@ -2,9 +2,9 @@ name: CI - Tests & Linting
 
 on:
   push:
-    branches: [ main, develop, staging ]
+    branches: [ main, develop ]
   pull_request:
-    branches: [ main, develop, staging ]
+    branches: [ main, develop ]
 
 jobs:
   test:

@@ -35,9 +35,9 @@ RUN apt-get update -qq && \
 COPY --from=build /usr/local/bundle /usr/local/bundle
 COPY --from=build /rails /rails
 
-RUN useradd rails --create-home --shell /bin/bash && \
+RUN groupadd -g 1000 rails && \
+    useradd -u 1000 -g rails --create-home --shell /bin/bash rails && \
     chown -R rails:rails db log storage tmp
-USER rails:rails
 
 ENTRYPOINT ["/rails/bin/docker-entrypoint"]
 

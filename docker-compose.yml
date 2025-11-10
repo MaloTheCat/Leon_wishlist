@@ -5,6 +5,7 @@ services:
     image: ghcr.io/malothecat/leon_wishlist:latest
     container_name: leon_wishlist_web
     restart: unless-stopped
+    user: "1000:1000"
     environment:
       - RAILS_ENV=production
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${LEON_WISHLIST_DATABASE_PASSWORD}@192.168.1.128:5432/leon_wishlist_production
@@ -13,10 +14,6 @@ services:
       - REDIS_URL=redis://redis:6379/0
     ports:
       - "3000:3000"
-    cap_drop:
-      - ALL
-    security_opt:
-      - no-new-privileges:true
     depends_on:
       - db
       - redis
