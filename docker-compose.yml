@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   web:
-    image: ghcr.io/malthecat/leon_wishlist:latest
+    image: ghcr.io/malothecat/leon_wishlist:latest
     container_name: leon_wishlist_web
     restart: unless-stopped
     environment:
