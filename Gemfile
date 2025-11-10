@@ -25,4 +25,5 @@ end
 group :test do
   gem "capybara"
   gem "selenium-webdriver"
+  gem "nokogiri", ">= 1.18.9"
 end
