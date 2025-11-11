@@ -83,10 +83,29 @@ if [ "$LOCATION" = "server" ]; then
 
     echo ""
     echo -e "${BLUE}=== Test 6 : Connectivité PostgreSQL ===${NC}"
-    if docker exec leon_wishlist_web nc -zv 192.168.1.128 5432 2>&1 | grep -q succeeded; then
-        echo -e "${GREEN}✅ PostgreSQL (192.168.1.128:5432) accessible${NC}"
+    # Vérifier si netcat est disponible
+    if docker exec leon_wishlist_web command -v nc &> /dev/null; then
+        if docker exec leon_wishlist_web nc -zv 192.168.1.128 5432 2>&1 | grep -q "succeeded\|open"; then
+            echo -e "${GREEN}✅ PostgreSQL (192.168.1.128:5432) accessible (test netcat)${NC}"
+        else
+            echo -e "${RED}❌ PostgreSQL non accessible via netcat${NC}"
+        fi
     else
-        echo -e "${RED}❌ PostgreSQL non accessible${NC}"
+        # Fallback si netcat n'est pas installé
+        if docker exec leon_wishlist_web timeout 3 bash -c 'cat < /dev/null > /dev/tcp/192.168.1.128/5432' 2>/dev/null; then
+            echo -e "${GREEN}✅ PostgreSQL port 5432 accessible (test /dev/tcp)${NC}"
+        else
+            echo -e "${YELLOW}⚠️  Test TCP échoué, tentative avec Rails...${NC}"
+        fi
+    fi
+    
+    # Test de connexion SQL via Rails
+    echo -n "   Test de connexion SQL... "
+    PSQL_TEST=$(docker exec leon_wishlist_web rails runner "puts ActiveRecord::Base.connection.execute('SELECT 1').first['?column?'] rescue puts 'ERROR'" 2>&1 | tail -1)
+    if [ "$PSQL_TEST" = "1" ]; then
+        echo -e "${GREEN}✅ Rails connecté à PostgreSQL${NC}"
+    else
+        echo -e "${RED}❌ Erreur de connexion Rails${NC}"
     fi
 
     echo ""
